@@ -796,12 +796,19 @@ elif page == "💬  NLP Insights":
             fig2 = px.scatter(df_f, x="avg_likert", y="vader_compound",
                               color="target_label",
                               color_discrete_map=PALETTE, opacity=0.6,
-                              trendline="ols",
                               template="plotly_dark",
                               labels={
                                   "avg_likert": "Avg Likert Score",
                                   "vader_compound": "VADER Compound",
                                   "target_label": "Group"})
+            for grp, col in PALETTE.items():
+                sub = df_f[df_f["target_label"] == grp]
+                if len(sub) > 1:
+                    m, b = np.polyfit(sub["avg_likert"], sub["vader_compound"], 1)
+                    xs = np.linspace(sub["avg_likert"].min(), sub["avg_likert"].max(), 50)
+                    fig2.add_scatter(x=xs, y=m*xs+b, mode="lines",
+                                     line=dict(color=col, width=2, dash="dot"),
+                                     name=f"{grp} trend", showlegend=False)
             fig2.update_layout(**PLOTLY_TEMPLATE["layout"],
                                height=340, margin=dict(t=20,b=20,l=10,r=10))
             st.plotly_chart(fig2, use_container_width=True)
